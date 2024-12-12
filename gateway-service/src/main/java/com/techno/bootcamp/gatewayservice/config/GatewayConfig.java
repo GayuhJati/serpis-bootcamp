@@ -27,6 +27,14 @@ public class GatewayConfig {
                                 .filter(requestHeaderFilter)
                                 .filter(authHeaderFilter)
                         ).uri("lb://auth-service"))
+                .route("product-service",r->r.path("/gateway/prod/**")
+                        .filters(f -> f.rewritePath("/gateway/prod/(?<segment>.*)","/prod/$\\{segment}")
+                        .filter(requestHeaderFilter))
+                        .uri("lb://prod-service"))
+                .route("order-service", r->r.path("/gateway/ord/**")
+                        .filters(f -> f.rewritePath("/gateway/ord/(?<segment>.*)","/ord/$\\{segment}")
+                                .filter(requestHeaderFilter))
+                        .uri("lb://ord-service"))
                 .build();
     }
 }
