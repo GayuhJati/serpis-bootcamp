@@ -1,0 +1,26 @@
+server:
+  port: 9004
+  servlet:
+    context-path: /gateway
+
+spring:
+  application:
+    name: gateway-service
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:9000/eureka
+
+header:
+  security:
+    xContentTypeOptions: nosniff
+    xXssProtection: 1; mode=block
+    strictTransportSecurity: max-age=31536000; includeSubDomains; preload
+    xFramerOptions: SAMEORIGIN
+    apiKey: 123
+
+jwt:
+  secret-key: 6LmeVJfpwtyRj9YBNLXmV8JozlbMOg2g

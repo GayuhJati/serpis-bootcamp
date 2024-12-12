@@ -1,0 +1,22 @@
+server:
+  port: 9006
+  servlet:
+    context-path: /order
+
+spring:
+  application:
+    name: ORDER-SERVICE
+  datasource:
+    url: jdbc:postgresql://localhost:5432/b12_ord_service
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
