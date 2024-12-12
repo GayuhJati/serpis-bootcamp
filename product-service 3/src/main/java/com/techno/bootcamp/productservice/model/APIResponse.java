@@ -19,9 +19,10 @@ public class APIResponse<T> {
     private HttpStatus httpStatus;
 
 
-    public APIResponse(T data) {
+    public APIResponse(T data,HttpStatus httpStatus) {
         this.status = Constant.STATUS_SUCCESS;
         this.data = data;
+        this.httpStatus = httpStatus;
     }
 
     public APIResponse(String message, HttpStatus httpStatus) {

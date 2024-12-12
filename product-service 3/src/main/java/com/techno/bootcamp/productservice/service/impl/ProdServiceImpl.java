@@ -7,7 +7,9 @@ import com.techno.bootcamp.productservice.model.response.ResProductDto;
 import com.techno.bootcamp.productservice.repository.ProdRepository;
 import com.techno.bootcamp.productservice.rest.authclient.AuthClient;
 import com.techno.bootcamp.productservice.rest.authclient.dto.response.ResUserDto;
+import com.techno.bootcamp.productservice.rest.authclient.dto.response.ResWrapperDto;
 import com.techno.bootcamp.productservice.service.ProdService;
+import com.techno.bootcamp.productservice.util.Constant;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,43 +36,48 @@ public class ProdServiceImpl implements ProdService {
 
         List<ResProductDto> responseDto = products.stream().map(product -> {
             ResProductDto dto = modelMapper.map(product, ResProductDto.class);
+            System.out.println("CreatedBy: " + product.getCreatedBy());
             try {
-                ResponseEntity<ResUserDto> userResponse = authClient.getUserById(product.getCreatedBy());
-                if (userResponse != null && userResponse.getBody() != null) {
-                    ResUserDto currentUser = userResponse.getBody();
+                ResponseEntity<ResWrapperDto> userResponse = authClient.getUserById(product.getCreatedBy());
+                if (userResponse != null && userResponse.getStatusCode().is2xxSuccessful() && userResponse.getBody() != null) {
+                    ResUserDto currentUser = userResponse.getBody().getData();
+                    System.out.println("CreatedBy: " + currentUser.getFirstname());
                     dto.setCreatedBy(currentUser.getFirstname() + " " + currentUser.getLastname());
                 } else {
-                    dto.setCreatedBy("ERR: No Body");
+                    dto.setCreatedBy("ERR: Failed to fetch user");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                dto.setCreatedBy("ERR: Failed to fetch user");
             }
-
             return dto;
-        }).toList();
-        return new APIResponse<>(responseDto);
+        }).collect(Collectors.toList());
+
+        return new APIResponse<>(responseDto, HttpStatus.OK);
     }
+
 
     @Override
     public APIResponse<ResProductDto> getProductById(Long id) {
         ProdEntity product = prodRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        ResponseEntity<ResUserDto> userResponse = authClient.getUserById(product.getCreatedBy());
-        ResProductDto resProductDto = ResProductDto.builder().code(product.getCode()).name(product.getName()).quantity(product.getQuantity()).price(product.getPrice()).createdBy(userResponse.toString()).updatedBy(userResponse.toString()).build();
+        ResponseEntity<ResWrapperDto> userResponse = authClient.getUserById(product.getCreatedBy());
+        ResProductDto resProductDto = ResProductDto.builder().code(product.getCode()).name(product.getName()).quantity(product.getQuantity()).price(product.getPrice()).createdBy(Objects.requireNonNull(userResponse.getBody()).getData().getFirstname()).updatedBy(userResponse.getBody().getData().getFirstname()).build();
 
 
-        return new APIResponse<>(resProductDto);
+        return new APIResponse<>(resProductDto, HttpStatus.OK);
     }
 
     @Override
     public APIResponse<String> createProduct(ReqProductDto request) {
-
+        String role = httpServletRequest.getHeader("role");
+        if (!"ADMIN".equals(role)) {
+            throw new RuntimeException("You don't have permission to create");
+        }
         ProdEntity entity = modelMapper.map(request, ProdEntity.class);
         entity.setCreatedBy(Long.valueOf(httpServletRequest.getHeader("idUser")));
         entity.setUpdatedBy(Long.valueOf(httpServletRequest.getHeader("idUser")));
-
-
 
 //        ProdEntity prodEntity = new ProdEntity();
 //        prodEntity.setCode(request.getCode());
@@ -84,16 +93,25 @@ public class ProdServiceImpl implements ProdService {
     public APIResponse<String> updateProduct(Long id, ReqProductDto request) {
         ProdEntity product = prodRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        String role = httpServletRequest.getHeader("role");
+        if (!"ADMIN".equals(role)) {
+            throw new RuntimeException("You don't have permission to create");
+        }
         product.setCode(request.getCode());
         product.setName(request.getName());
         product.setQuantity(request.getQuantity());
         product.setPrice(request.getPrice());
         prodRepository.save(product);
-        return new APIResponse<>("Product saved successfully",HttpStatus.OK);
+        return new APIResponse<>("Product saved successfully", HttpStatus.OK);
     }
 
     @Override
     public APIResponse<String> deleteProduct(Long id) {
+        String role = httpServletRequest.getHeader("role");
+        if (!"ADMIN".equals(role)) {
+            throw new RuntimeException("You don't have permission to create");
+        }
         if (!prodRepository.existsById(id)) {
             throw new RuntimeException("Product not found with id: " + id);
         }

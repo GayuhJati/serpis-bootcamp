@@ -2,11 +2,13 @@ package com.bootcamp.techno.orderservice.model;
 
 import com.bootcamp.techno.orderservice.util.Constant;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class APIResponse<T> {

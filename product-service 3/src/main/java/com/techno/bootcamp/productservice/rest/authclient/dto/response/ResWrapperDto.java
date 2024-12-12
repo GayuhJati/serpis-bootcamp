@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResUserDto {
-    private String firstname;
-    private String lastname;
-    private String email;
-    private String role;
+public class ResWrapperDto {
+    private ResUserDto data;
 }
