@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResProductDto {
+    private Long id;
     private String code;
     private String name;
     private Integer quantity;

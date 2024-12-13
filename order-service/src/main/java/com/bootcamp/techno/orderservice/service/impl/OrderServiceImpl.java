@@ -3,6 +3,7 @@ package com.bootcamp.techno.orderservice.service.impl;
 import com.bootcamp.techno.orderservice.entity.OrderEntity;
 import com.bootcamp.techno.orderservice.model.APIResponse;
 import com.bootcamp.techno.orderservice.model.request.ReqOrderDto;
+import com.bootcamp.techno.orderservice.model.response.ResOrderDto;
 import com.bootcamp.techno.orderservice.repository.OrderRepository;
 import com.bootcamp.techno.orderservice.rest.productclient.ProductClient;
 import com.bootcamp.techno.orderservice.rest.productclient.dto.response.ResProductDto;
@@ -13,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +53,8 @@ public class OrderServiceImpl implements OrderService {
             }
 
             OrderEntity entity = modelMapper.map(request, OrderEntity.class);
-            entity.setIdUser(Long.valueOf(httpServletRequest.getHeader("idUser"))); // Menetapkan ID user dari header
+            entity.setIdUser(Long.valueOf(httpServletRequest.getHeader("idUser")));
+            entity.setStatus("PENDING");
             orderRepository.save(entity);
 
             return new APIResponse<>("Order Created Successfully");
@@ -61,7 +65,25 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
-    public APIResponse<String> updateOrder(Long id, ReqOrderDto request) {
-        return null;
+    public APIResponse<String> updateOrder(Long id, String status) {
+        if (id == null || status == null || status.isEmpty()) {
+            throw new IllegalArgumentException("Invalid order ID or status");
+        }
+
+        OrderEntity order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order with ID " + id + " not found"));
+
+        order.setStatus("PAID");
+        orderRepository.save(order);
+
+        return new APIResponse<>("Order status updated to " + status);
     }
+
+    @Override
+    public APIResponse<List<ResOrderDto>> getAllOrderById(Long id) {
+        List<OrderEntity> orderList = orderRepository.findAll();
+        List<ResOrderDto> responseDto2 =  orderList.stream().sorted((order1, order2) -> Long.compare(order1.getId(), order2.getId())).map( user -> modelMapper.map(user, ResOrderDto.class)).toList();
+        return new APIResponse<>(responseDto2);
+    }
+
 }

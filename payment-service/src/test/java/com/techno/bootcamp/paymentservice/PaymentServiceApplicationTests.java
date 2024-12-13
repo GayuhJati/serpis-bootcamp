@@ -1,4 +1,4 @@
-package com.techno.bootcamp.payment_service;
+package com.techno.bootcamp.paymentservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

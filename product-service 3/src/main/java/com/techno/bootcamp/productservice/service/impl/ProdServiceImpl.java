@@ -63,7 +63,7 @@ public class ProdServiceImpl implements ProdService {
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
         ResponseEntity<ResWrapperDto> userResponse = authClient.getUserById(product.getCreatedBy());
-        ResProductDto resProductDto = ResProductDto.builder().code(product.getCode()).name(product.getName()).quantity(product.getQuantity()).price(product.getPrice()).createdBy(Objects.requireNonNull(userResponse.getBody()).getData().getFirstname()).updatedBy(userResponse.getBody().getData().getFirstname()).build();
+        ResProductDto resProductDto = ResProductDto.builder().id(product.getId()).code(product.getCode()).name(product.getName()).quantity(product.getQuantity()).price(product.getPrice()).createdBy(Objects.requireNonNull(userResponse.getBody()).getData().getFirstname()).updatedBy(userResponse.getBody().getData().getFirstname()).build();
 
 
         return new APIResponse<>(resProductDto, HttpStatus.OK);

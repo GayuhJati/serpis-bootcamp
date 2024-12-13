@@ -35,6 +35,10 @@ public class GatewayConfig {
                         .filters(f -> f.rewritePath("/gateway/order/(?<segment>.*)","/order/$\\{segment}")
                                 .filter(requestHeaderFilter).filter(authHeaderFilter))
                         .uri("lb://order-service"))
+                .route("payment-service", r->r.path("/gateway/payment/**")
+                        .filters(f -> f.rewritePath("/gateway/payment/(?<segment>.*)","/payment/$\\{segment}")
+                                .filter(requestHeaderFilter).filter(authHeaderFilter))
+                        .uri("lb://payment-service"))
                 .build();
     }
 }
